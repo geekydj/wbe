@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProteinView3D - Advanced Molecular Visualization</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="loading-screen">
+        <div class="loading-content">
+            <div class="dna-helix"></div>
+            <h2>Loading ProteinView3D</h2>
+        </div>
+    </div>
+
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <div class="logo-icon">🧬</div>
+                <h1>Protein<span class="accent">View3D</span></h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="lander.html" class="nav-link active">Home</a></li>
+                <li><a href="viewer.html" class="nav-link">Viewer</a></li>
+                <li><a href="upload.html" class="nav-link">Upload</a></li>
+            </ul>
+            <div class="mobile-menu-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-background">
+                <div class="particle" style="--x: 20%; --y: 30%; --delay: 0s;"></div>
+                <div class="particle" style="--x: 80%; --y: 20%; --delay: 2s;"></div>
+                <div class="particle" style="--x: 60%; --y: 70%; --delay: 4s;"></div>
+                <div class="particle" style="--x: 30%; --y: 80%; --delay: 1s;"></div>
+                <div class="particle" style="--x: 90%; --y: 60%; --delay: 3s;"></div>
+            </div>
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1 class="hero-title">
+                        <span class="title-line">Visualize Protein</span>
+                        <span class="title-line">Structures in</span>
+                        <span class="title-line accent-text">3D Space</span>
+                    </h1>
+                    <p class="hero-subtitle">Advanced molecular visualization platform for researchers, students, and professionals. Explore the intricate world of protein structures with cutting-edge 3D technology.</p>
+                    <div class="hero-buttons">
+                        <a href="viewer.html" class="btn btn-primary">
+                            <i class="fas fa-cube"></i>
+                            Start Viewing
+                        </a>
+                        <a href="upload.html" class="btn btn-secondary">
+                            <i class="fas fa-upload"></i>
+                            Upload PDB
+                        </a>
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <div class="protein-container">
+                        <div class="protein-model">
+                            <div class="molecule">
+                                <div class="atom atom-1"></div>
+                                <div class="atom atom-2"></div>
+                                <div class="atom atom-3"></div>
+                                <div class="atom atom-4"></div>
+                                <div class="bond bond-1"></div>
+                                <div class="bond bond-2"></div>
+                                <div class="bond bond-3"></div>
+                            </div>
+                        </div>
+                        <div class="glow-effect"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="features">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Powerful Features</h2>
+                    <p class="section-subtitle">Everything you need for protein structure analysis</p>
+                </div>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-cube"></i>
+                        </div>
+                        <h3>3D Visualization</h3>
+                        <p>Interactive 3D protein structure visualization with multiple rendering modes including ball-and-stick, space-filling, and cartoon representations.</p>
+                        <div class="feature-highlight"></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-upload"></i>
+                        </div>
+                        <h3>PDB File Support</h3>
+                        <p>Seamless drag-and-drop PDB file upload with real-time structure validation and error detection for accurate molecular rendering.</p>
+                        <div class="feature-highlight"></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-tools"></i>
+                        </div>
+                        <h3>Analysis Tools</h3>
+                        <p>Comprehensive toolkit including distance measurements, angle calculations, surface analysis, and hydrogen bond detection.</p>
+                        <div class="feature-highlight"></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-palette"></i>
+                        </div>
+                        <h3>Custom Styling</h3>
+                        <p>Flexible color schemes, transparency controls, and lighting options to create publication-ready molecular visualizations.</p>
+                        <div class="feature-highlight"></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h3>Search & Filter</h3>
+                        <p>Advanced search capabilities to find specific residues, chains, or structural motifs within complex protein structures.</p>
+                        <div class="feature-highlight"></div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-download"></i>
+                        </div>
+                        <h3>Export Options</h3>
+                        <p>Export high-resolution images, 3D models, and analysis data in various formats for presentations and publications.</p>
+                        <div class="feature-highlight"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta">
+            <div class="container">
+                <div class="cta-content">
+                    <h2>Ready to Explore?</h2>
+                    <p>Start visualizing protein structures today with our powerful 3D viewer</p>
+                    <a href="viewer.html" class="btn btn-primary btn-large">
+                        <i class="fas fa-rocket"></i>
+                        Launch Viewer
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="logo-icon">🧬</div>
+                    <h3>ProteinView3D</h3>
+                    <p>Advanced molecular visualization platform</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="viewer.html">3D Viewer</a></li>
+                        <li><a href="upload.html">Upload PDB</a></li>
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">Support</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Team Section -->
+            <div class="team-section">
+                <h3 class="team-title">Meet Our Team</h3>
+                <div class="team-grid">
+                    <div class="team-category">
+                        <div class="category-header">
+                            <i class="fas fa-cube"></i>
+                            <h4>Physical Model</h4>
+                        </div>
+                        <div class="team-members">
+                            <div class="member leader" data-animation="bounce">
+                                <span class="member-name">Anushka</span>
+                                <span class="member-role">Team Leader</span>
+                                <div class="crown">👑</div>
+                            </div>
+                            <div class="member" data-animation="slideInLeft">
+                                <span class="member-name">Riya Dhingra</span>
+                            </div>
+                            <div class="member" data-animation="slideInRight">
+                                <span class="member-name">Om</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="team-category">
+                        <div class="category-header">
+                            <i class="fas fa-presentation"></i>
+                            <h4>Presentation</h4>
+                        </div>
+                        <div class="team-members">
+                            <div class="member" data-animation="fadeInUp">
+                                <span class="member-name">Rajshri</span>
+                            </div>
+                            <div class="member" data-animation="fadeInDown">
+                                <span class="member-name">Harshit</span>
+                            </div>
+                            <div class="member" data-animation="zoomIn">
+                                <span class="member-name">Pranav</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="team-category">
+                        <div class="category-header">
+                            <i class="fas fa-code"></i>
+                            <h4>Development</h4>
+                        </div>
+                        <div class="team-members">
+                            <div class="member" data-animation="rotateIn">
+                                <span class="member-name">Dhairya</span>
+                            </div>
+                            <div class="member" data-animation="flipInX">
+                                <span class="member-name">Amritanshu</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 ProteinView3D. Developed with ❤️ by our amazing team.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

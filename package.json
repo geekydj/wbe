@@ -1,0 +1,43 @@
+{
+  "name": "protein-viewer-ultimate",
+  "version": "1.0.0",
+  "description": "Advanced molecular visualization platform for protein structures with GSAP animations and 3D rendering",
+  "main": "lander.html",
+  "scripts": {
+    "start": "live-server --port=3000 --open=/lander.html",
+    "dev": "live-server --port=3000",
+    "serve": "http-server -p 3000 -o",
+    "build": "echo 'No build step required - static files'",
+    "test": "echo 'No tests specified'"
+  },
+  "keywords": [
+    "protein",
+    "molecular",
+    "visualization",
+    "3d",
+    "webgl",
+    "biochemistry",
+    "pdb",
+    "gsap",
+    "3dmol",
+    "bioinformatics"
+  ],
+  "author": "ProteinView3D Team",
+  "license": "MIT",
+  "devDependencies": {
+    "live-server": "^1.2.2",
+    "http-server": "^14.1.1"
+  },
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/proteinview3d/protein-viewer-ultimate.git"
+  },
+  "bugs": {
+    "url": "https://github.com/proteinview3d/protein-viewer-ultimate/issues"
+  },
+  "homepage": "https://proteinview3d.github.io/protein-viewer-ultimate",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

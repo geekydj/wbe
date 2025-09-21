@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload PDB Structure - ProteinView3D</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="upload-page">
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <div class="logo-icon">🧬</div>
+                <h1>Protein<span class="accent">View3D</span></h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="lander.html" class="nav-link">Home</a></li>
+                <li><a href="viewer.html" class="nav-link">Viewer</a></li>
+                <li><a href="upload.html" class="nav-link active">Upload</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="upload-main">
+        <div class="container">
+            <div class="upload-header">
+                <h1>Upload Protein Structure</h1>
+                <p>Upload your PDB files to visualize protein structures in 3D</p>
+            </div>
+
+            <div class="upload-container">
+                <!-- Upload Area -->
+                <div class="upload-section">
+                    <div class="upload-zone" id="upload-zone">
+                        <div class="upload-content">
+                            <div class="upload-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <h3>Drag & Drop Your PDB Files</h3>
+                            <p>Or click to browse and select files</p>
+                            <div class="upload-formats">
+                                <span class="format-tag">.pdb</span>
+                                <span class="format-tag">.cif</span>
+                                <span class="format-tag">.mol2</span>
+                            </div>
+                            <input type="file" id="file-input" accept=".pdb,.cif,.mol2" multiple hidden>
+                            <button class="btn btn-primary" onclick="document.getElementById('file-input').click()">
+                                <i class="fas fa-folder-open"></i>
+                                Browse Files
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Upload Progress -->
+                    <div class="upload-progress" id="upload-progress" style="display: none;">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-fill"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span id="progress-percentage">0%</span>
+                            <span id="progress-status">Uploading...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- File List -->
+                <div class="file-list-section">
+                    <div class="section-header">
+                        <h3>Uploaded Files</h3>
+                        <button id="clear-all-btn" class="btn btn-sm btn-secondary" style="display: none;">
+                            <i class="fas fa-trash"></i>
+                            Clear All
+                        </button>
+                    </div>
+                    <div class="file-list" id="file-list">
+                        <div class="empty-state">
+                            <i class="fas fa-file-medical"></i>
+                            <p>No files uploaded yet</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <h3>Quick Actions</h3>
+                    <div class="actions-grid">
+                        <div class="action-card">
+                            <div class="action-icon">
+                                <i class="fas fa-download"></i>
+                            </div>
+                            <h4>Fetch from PDB</h4>
+                            <p>Download structure directly from Protein Data Bank</p>
+                            <div class="action-form">
+                                <div class="input-group">
+                                    <input type="text" id="pdb-id-input" placeholder="Enter PDB ID (e.g., 1MBN)" maxlength="4">
+                                    <button id="fetch-pdb-btn" class="btn btn-primary">
+                                        <i class="fas fa-search"></i>
+                                        Fetch
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="action-card">
+                            <div class="action-icon">
+                                <i class="fas fa-link"></i>
+                            </div>
+                            <h4>Load from URL</h4>
+                            <p>Load structure from direct URL</p>
+                            <div class="action-form">
+                                <div class="input-group">
+                                    <input type="url" id="url-input" placeholder="Enter structure URL">
+                                    <button id="load-url-btn" class="btn btn-primary">
+                                        <i class="fas fa-external-link-alt"></i>
+                                        Load
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="action-card">
+                            <div class="action-icon">
+                                <i class="fas fa-flask"></i>
+                            </div>
+                            <h4>Sample Structures</h4>
+                            <p>Try example protein structures</p>
+                            <div class="action-form">
+                                <select id="sample-structures">
+                                    <option value="">Select a sample...</option>
+                                    <option value="1MBN">Myoglobin (1MBN)</option>
+                                    <option value="3PTB">Beta-trypsin (3PTB)</option>
+                                    <option value="1CRN">Crambin (1CRN)</option>
+                                    <option value="1UBQ">Ubiquitin (1UBQ)</option>
+                                    <option value="2PTC">Trypsin Inhibitor (2PTC)</option>
+                                </select>
+                                <button id="load-sample-btn" class="btn btn-primary">
+                                    <i class="fas fa-play"></i>
+                                    Load Sample
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- File Preview Modal -->
+    <div id="preview-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>File Preview</h3>
+                <button class="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="preview-info">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>Filename:</label>
+                            <span id="preview-filename">-</span>
+                        </div>
+                        <div class="info-item">
+                            <label>File Size:</label>
+                            <span id="preview-filesize">-</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Format:</label>
+                            <span id="preview-format">-</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Status:</label>
+                            <span id="preview-status" class="status">-</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="preview-content">
+                    <div class="content-tabs">
+                        <button class="tab-btn active" data-tab="structure">Structure Info</button>
+                        <button class="tab-btn" data-tab="content">File Content</button>
+                        <button class="tab-btn" data-tab="validation">Validation</button>
+                    </div>
+                    <div class="tab-content">
+                        <div id="tab-structure" class="tab-panel active">
+                            <div id="structure-info">
+                                <div class="loading">Analyzing structure...</div>
+                            </div>
+                        </div>
+                        <div id="tab-content" class="tab-panel">
+                            <div class="file-content">
+                                <pre id="file-content-text"></pre>
+                            </div>
+                        </div>
+                        <div id="tab-validation" class="tab-panel">
+                            <div id="validation-results">
+                                <div class="loading">Validating file...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="visualize-btn" class="btn btn-primary">
+                    <i class="fas fa-cube"></i>
+                    Visualize in 3D
+                </button>
+                <button class="btn btn-secondary modal-close">
+                    <i class="fas fa-times"></i>
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification System -->
+    <div id="notifications" class="notifications"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <h3 id="loading-title">Processing...</h3>
+            <p id="loading-message">Please wait while we process your file</p>
+        </div>
+    </div>
+
+    <script src="js/upload.js"></script>
+</body>
+</html>

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Protein Viewer - ProteinView3D</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://3dmol.org/build/3Dmol-min.js"></script>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="viewer-page">
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <div class="logo-icon">🧬</div>
+                <h1>Protein<span class="accent">View3D</span></h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="lander.html" class="nav-link">Home</a></li>
+                <li><a href="viewer.html" class="nav-link active">Viewer</a></li>
+                <li><a href="upload.html" class="nav-link">Upload</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="viewer-container">
+        <!-- Left Sidebar - Controls -->
+        <div class="sidebar left-sidebar">
+            <div class="sidebar-header">
+                <h3><i class="fas fa-cog"></i> Controls</h3>
+                <button class="sidebar-toggle" data-target="left-sidebar">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            </div>
+            
+            <div class="control-section">
+                <h4>Load Structure</h4>
+                <div class="control-group">
+                    <label for="pdb-input">PDB ID:</label>
+                    <div class="input-group">
+                        <input type="text" id="pdb-input" placeholder="e.g., 1MBN, 2XYZ" maxlength="4">
+                        <button id="load-pdb-btn" class="btn btn-sm btn-primary">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label for="sample-select">Sample Structures:</label>
+                    <select id="sample-select">
+                        <option value="">Select a sample...</option>
+                        <option value="1MBN">Myoglobin (1MBN)</option>
+                        <option value="3PTB">Beta-trypsin (3PTB)</option>
+                        <option value="1CRN">Crambin (1CRN)</option>
+                        <option value="1UBQ">Ubiquitin (1UBQ)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h4>Visualization Style</h4>
+                <div class="control-group">
+                    <label>Representation:</label>
+                    <div class="style-buttons">
+                        <button class="style-btn active" data-style="cartoon">
+                            <i class="fas fa-bezier-curve"></i>
+                            Cartoon
+                        </button>
+                        <button class="style-btn" data-style="stick">
+                            <i class="fas fa-grip-lines"></i>
+                            Stick
+                        </button>
+                        <button class="style-btn" data-style="sphere">
+                            <i class="fas fa-circle"></i>
+                            Sphere
+                        </button>
+                        <button class="style-btn" data-style="surface">
+                            <i class="fas fa-mountain"></i>
+                            Surface
+                        </button>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>Color Scheme:</label>
+                    <select id="color-scheme">
+                        <option value="spectrum">Spectrum</option>
+                        <option value="chainbow">Chain Rainbow</option>
+                        <option value="amino">Amino Acid</option>
+                        <option value="secondary">Secondary Structure</option>
+                        <option value="hydrophobic">Hydrophobicity</option>
+                        <option value="charge">Charge</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="opacity-slider">Opacity:</label>
+                    <input type="range" id="opacity-slider" min="0.1" max="1" step="0.1" value="1">
+                    <span id="opacity-value">100%</span>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h4>Animation</h4>
+                <div class="control-group">
+                    <button id="spin-btn" class="btn btn-secondary">
+                        <i class="fas fa-sync-alt"></i>
+                        Toggle Spin
+                    </button>
+                    <button id="rock-btn" class="btn btn-secondary">
+                        <i class="fas fa-exchange-alt"></i>
+                        Rock Motion
+                    </button>
+                </div>
+                <div class="control-group">
+                    <label for="spin-speed">Animation Speed:</label>
+                    <input type="range" id="spin-speed" min="0.1" max="2" step="0.1" value="1">
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h4>Display Options</h4>
+                <div class="control-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="show-labels" checked>
+                        <span class="checkmark"></span>
+                        Show Labels
+                    </label>
+                </div>
+                <div class="control-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="show-bonds">
+                        <span class="checkmark"></span>
+                        Show Bonds
+                    </label>
+                </div>
+                <div class="control-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="show-hetero" checked>
+                        <span class="checkmark"></span>
+                        Show Hetero Atoms
+                    </label>
+                </div>
+                <div class="control-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="show-water">
+                        <span class="checkmark"></span>
+                        Show Water
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Viewer Area -->
+        <div class="viewer-main">
+            <div class="viewer-header">
+                <div class="structure-info">
+                    <h3 id="structure-title">No structure loaded</h3>
+                    <div class="structure-meta">
+                        <span id="structure-chains">0 chains</span>
+                        <span id="structure-residues">0 residues</span>
+                        <span id="structure-sequence">0 sequence length</span>
+                        <span id="structure-atoms">0 atoms</span>
+                    </div>
+                </div>
+                <div class="viewer-controls">
+                    <button id="fullscreen-btn" class="btn btn-icon" title="Fullscreen">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                    <button id="screenshot-btn" class="btn btn-icon" title="Screenshot">
+                        <i class="fas fa-camera"></i>
+                    </button>
+                    <button id="reset-view-btn" class="btn btn-icon" title="Reset View">
+                        <i class="fas fa-home"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div id="viewer-3d" class="mol-viewer">
+                <div class="viewer-placeholder">
+                    <div class="placeholder-content">
+                        <i class="fas fa-cube placeholder-icon"></i>
+                        <h3>Ready to Visualize</h3>
+                        <p>Load a PDB structure to begin 3D visualization</p>
+                        <button id="load-sample-btn" class="btn btn-primary">
+                            <i class="fas fa-play"></i>
+                            Load Sample Structure
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading Overlay -->
+            <div id="loading-overlay" class="loading-overlay hidden">
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>Loading structure...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar - Analysis Tools -->
+        <div class="sidebar right-sidebar">
+            <div class="sidebar-header">
+                <h3><i class="fas fa-chart-line"></i> Analysis</h3>
+                <button class="sidebar-toggle" data-target="right-sidebar">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+
+            <div class="control-section">
+                <h4>Measurements</h4>
+                <div class="control-group">
+                    <button id="measure-distance-btn" class="btn btn-secondary btn-full">
+                        <i class="fas fa-ruler"></i>
+                        Measure Distance
+                    </button>
+                    <button id="measure-angle-btn" class="btn btn-secondary btn-full">
+                        <i class="fas fa-drafting-compass"></i>
+                        Measure Angle
+                    </button>
+                </div>
+                <div id="measurements-list" class="measurements-list"></div>
+            </div>
+
+            <div class="control-section">
+                <h4>Selection Tools</h4>
+                <div class="control-group">
+                    <label for="selection-mode">Selection Mode:</label>
+                    <select id="selection-mode">
+                        <option value="atom">Atom</option>
+                        <option value="residue">Residue</option>
+                        <option value="chain">Chain</option>
+                        <option value="secondary">Secondary Structure</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <button id="select-all-btn" class="btn btn-sm btn-secondary">Select All</button>
+                    <button id="clear-selection-btn" class="btn btn-sm btn-secondary">Clear</button>
+                </div>
+                <div id="selection-info" class="selection-info">
+                    <p>No selection</p>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h4>Structure Analysis</h4>
+                <div class="control-group">
+                    <button id="analyze-secondary-btn" class="btn btn-secondary btn-full">
+                        <i class="fas fa-dna"></i>
+                        Secondary Structure
+                    </button>
+                    <button id="analyze-surface-btn" class="btn btn-secondary btn-full">
+                        <i class="fas fa-mountain"></i>
+                        Surface Area
+                    </button>
+                    <button id="find-cavities-btn" class="btn btn-secondary btn-full">
+                        <i class="fas fa-search"></i>
+                        Find Cavities
+                    </button>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h4>Export Options</h4>
+                <div class="control-group">
+                    <button id="export-png-btn" class="btn btn-secondary btn-full">
+                        <i class="fas fa-image"></i>
+                        Export PNG
+                    </button>
+                    <button id="export-pdb-btn" class="btn btn-secondary btn-full">
+                        <i class="fas fa-file-code"></i>
+                        Export PDB
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Panel -->
+    <div id="info-panel" class="info-panel">
+        <div class="info-content">
+            <h4>Structure Information</h4>
+            <div id="info-details"></div>
+        </div>
+        <button class="info-close">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+
+    <!-- Context Menu -->
+    <div id="context-menu" class="context-menu">
+        <div class="menu-item" data-action="center">
+            <i class="fas fa-crosshairs"></i>
+            Center View
+        </div>
+        <div class="menu-item" data-action="select">
+            <i class="fas fa-mouse-pointer"></i>
+            Select
+        </div>
+        <div class="menu-item" data-action="label">
+            <i class="fas fa-tag"></i>
+            Add Label
+        </div>
+        <div class="menu-item" data-action="info">
+            <i class="fas fa-info-circle"></i>
+            Show Info
+        </div>
+    </div>
+
+    <script src="js/viewer.js"></script>
+</body>
+</html>
