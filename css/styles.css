@@ -967,6 +967,23 @@ body {
     backdrop-filter: blur(0.1px);
 }
 
+/* Special background for Amritanshu */
+.member[data-animation="flipInX"] {
+    background-image: url('https://cdn.discordapp.com/attachments/1328691430880972862/1349685251256881152/9AD53B17-2E36-4F3C-A243-97B219A2DECC-1.gif?ex=68d27157&is=68d11fd7&hm=40301f36e41184aeb81f42dfec7cfc89bcb993bb516a5506a2c7209aac3470f9&');
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: rgba(16, 21, 62, 0.25);
+}
+
+.member[data-animation="flipInX"]::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1;
+}
+
 /* Enhanced glow for Dhairya's name */
 .member[data-animation="rotateIn"]:hover .member-name {
     animation: nameRotateColor 1s ease-in-out, dhairyaGlow 0.8s ease-out;
@@ -981,6 +998,13 @@ body {
         text-shadow: 0 0 25px rgba(240, 147, 251, 1), 0 0 35px rgba(102, 126, 234, 0.8), 2px 2px 4px rgba(0, 0, 0, 0.8);
         transform: scale(1.1);
     }
+}
+
+.member[data-animation="flipInX"] .member-name,
+.member[data-animation="flipInX"] .member-role {
+    position: relative;
+    z-index: 2;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 .member-role {
