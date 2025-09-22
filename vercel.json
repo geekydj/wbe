@@ -1,8 +1,17 @@
 {
   "version": 2,
+  "cleanUrls": true,
   "builds": [
     {
       "src": "css/styles.css",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "js/upload.js",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "js/viewer.js",
       "use": "@vercel/static"
     },
     {
