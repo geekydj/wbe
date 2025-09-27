@@ -87,7 +87,7 @@ class ProteinUploader {
     }
 
     validateFile(file) {
-        const allowedTypes = ['.pdb', '.cif', '.mol2', '.pdf'];
+        const allowedTypes = ['.pdb', '.cif', '.mol2'];
         const maxSize = 50 * 1024 * 1024; // 50MB
         
         const extension = '.' + file.name.split('.').pop().toLowerCase();
@@ -113,7 +113,7 @@ class ProteinUploader {
             const content = await this.readFile(file);
             
             // Validate structure
-            const isTextBased = !['.pdf'].includes(this.getFileExtension(file.name));
+            const isTextBased = ['.pdb', '.cif', '.mol2'].includes(this.getFileExtension(file.name));
             const validation = isTextBased ? this.validateStructure(content, file.name) : { isValid: true, errors: [], warnings: [], info: {} };
             
             // Create file object

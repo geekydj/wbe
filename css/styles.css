@@ -1392,20 +1392,6 @@ body {
     display: none;
 }
 
-.loading-spinner {
-    text-align: center;
-}
-
-.spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid var(--border);
-    border-top: 4px solid var(--primary);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 1rem;
-}
-
 .measurements-list {
     max-height: 200px;
     overflow-y: auto;
@@ -2056,3 +2042,63 @@ body {
 .shadow { box-shadow: var(--shadow); }
 .shadow-md { box-shadow: var(--shadow-md); }
 .shadow-lg { box-shadow: var(--shadow-lg); }
+
+/* ==========================================
+   New Preloader Animation
+========================================== */
+.preloader {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    animation: preloader-rotate 2s infinite linear;
+}
+
+.preloader-text {
+    margin-top: 1.5rem;
+    font-size: var(--font-size-lg);
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.preloader-atom {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    margin-top: -8px;
+    margin-left: -8px;
+    transform-origin: 50px 50px;
+    animation: preloader-orbit 2s infinite ease-in-out;
+    box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+}
+
+.preloader-atom:nth-child(1) {
+    background: #667eea; /* --primary */
+    animation-delay: 0s;
+}
+
+.preloader-atom:nth-child(2) {
+    background: #764ba2; /* --secondary */
+    animation-delay: -0.5s;
+}
+
+.preloader-atom:nth-child(3) {
+    background: #f093fb; /* --accent */
+    animation-delay: -1s;
+}
+
+.preloader-atom:nth-child(4) {
+    background: #4facfe; /* from --gradient-accent */
+    animation-delay: -1.5s;
+}
+
+@keyframes preloader-rotate {
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes preloader-orbit {
+    0%, 100% { transform: rotate(0deg) translateX(42px) scale(1); }
+    50% { transform: rotate(180deg) translateX(42px) scale(1.2); }
+}

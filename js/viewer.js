@@ -46,7 +46,7 @@ class ProteinViewer {
 
     loadFromPDB(pdbId) {
         if (!pdbId || pdbId.length !== 4) {
-            alert('Please enter a valid 4-character PDB ID.');
+            this.showNotification('Please enter a valid 4-character PDB ID.', 'warning');
             return;
         }
         this.showLoading(true);
@@ -62,12 +62,15 @@ class ProteinViewer {
                 this.model = this.viewer.addModel(data, 'pdb');
                 this.updateStructureInfo(pdbId.toUpperCase(), data, 'pdb');
                 this.applyStyle();
+                if (document.getElementById('show-labels').checked) {
+                    this.toggleLabels(true);
+                }
                 this.viewer.zoomTo();
                 this.viewer.render();
                 this.showLoading(false);
             })
             .catch(error => {
-                alert(`Could not load PDB ID: ${pdbId}. ${error.message}`);
+                this.showNotification(`Could not load PDB ID: ${pdbId}. ${error.message}`, 'error');
                 this.showLoading(false);
             });
     }
@@ -77,6 +80,9 @@ class ProteinViewer {
         this.viewer.clear();
         this.model = this.viewer.addModel(data, type);
         this.updateStructureInfo(name, data, type);
+        if (document.getElementById('show-labels').checked) {
+            this.toggleLabels(true);
+        }
         this.applyStyle();
         this.viewer.zoomTo();
         this.viewer.render();
@@ -129,8 +135,7 @@ class ProteinViewer {
         document.getElementById('opacity-slider').addEventListener('input', (e) => {
             const opacity = parseFloat(e.target.value);
             document.getElementById('opacity-value').textContent = `${Math.round(opacity * 100)}%`;
-            this.viewer.setOpacity(opacity);
-            this.viewer.render();
+            this.applyStyle();
         });
 
         // Animation
@@ -155,6 +160,9 @@ class ProteinViewer {
         document.getElementById('show-labels').addEventListener('change', (e) => this.toggleLabels(e.target.checked));
         document.getElementById('show-water').addEventListener('change', (e) => this.toggleWater(e.target.checked));
         document.getElementById('show-hetero').addEventListener('change', (e) => this.toggleHetero(e.target.checked));
+        // The 'show-bonds' checkbox should only hide/show the stick representation, not control the main view.
+        // The main style is set by applyStyle(). We'll adjust toggleBonds to be more specific.
+        // For now, let's ensure it doesn't hide everything on load.
         document.getElementById('show-bonds').addEventListener('change', (e) => this.toggleBonds(e.target.checked));
 
         // Right sidebar - Analysis and Export
@@ -163,7 +171,6 @@ class ProteinViewer {
 
         document.getElementById('measure-distance-btn').addEventListener('click', () => this.setMeasurementMode('distance'));
         document.getElementById('measure-angle-btn').addEventListener('click', () => this.setMeasurementMode('angle'));
-        document.getElementById('select-all-btn').addEventListener('click', () => this.selectAll());
         document.getElementById('clear-selection-btn').addEventListener('click', () => this.clearSelection());
         document.getElementById('analyze-secondary-btn').addEventListener('click', () => this.analyzeSecondaryStructure());
         document.getElementById('analyze-surface-btn').addEventListener('click', () => this.analyzeSurfaceArea());
@@ -175,14 +182,28 @@ class ProteinViewer {
 
         const style = document.querySelector('.style-btn.active').dataset.style;
         const color = document.getElementById('color-scheme').value;
+        const opacity = parseFloat(document.getElementById('opacity-slider').value);
 
-        this.viewer.setStyle({}, { [style]: { colorscheme: color } });
+        // Clear any existing surfaces before applying a new style
+        this.viewer.removeAllSurfaces();
+        this.viewer.setStyle({}, {}); // Clear all atom styles
+
+        if (style === 'surface') {
+            // Surface rendering is handled differently
+            this.viewer.addSurface($3Dmol.SurfaceType.MS, {
+                colorscheme: color,
+                opacity: opacity
+            });
+        } else {
+            // Apply atom-based styles
+            this.viewer.setStyle({}, { [style]: { colorscheme: color, opacity: opacity } });
+        }
         this.viewer.render();
     }
 
     toggleLabels(show) {
         if (show) {
-            this.viewer.addResidueLabels();
+            this.viewer.addResLabels();
         } else {
             this.viewer.removeAllLabels();
         }
@@ -190,27 +211,40 @@ class ProteinViewer {
     }
 
     toggleWater(show) {
-        this.viewer.setStyle({ water: {} }, { stick: { hidden: !show } });
+        this.viewer.setStyle({ resn: ['HOH', 'WAT'] }, { stick: { hidden: !show } });
+        this.viewer.render();
+    }
+
+    toggleHetero(show) {
+        this.viewer.setStyle({ hetatm: true }, { stick: { hidden: !show } });
+        this.viewer.render();
+    }
+
+    toggleBonds(show) {
+        if (show) {
+            // Add a semi-transparent stick representation for bonds
+            this.viewer.addStyle({}, { stick: { colorscheme: 'elem', radius: 0.15, opacity: 0.7 } });
+        } else {
+            this.viewer.removeStyle({ stick: {} });
+        }
         this.viewer.render();
     }
 
     updateStructureInfo(name, data, type) {
         document.getElementById('structure-title').textContent = name;
         const atoms = this.viewer.getModel().selectedAtoms({}).length;
-        // Basic parsing for chains/residues - can be improved
+        
         let chains = new Set();
-        let sequence = '';
         let residues = new Set();
-        if (type === 'pdb') {
-            data.split('\n').forEach(line => {
+
+        if (type === 'pdb' || type === 'cif' || type === 'mol2') { // check for text-based formats
+            const lines = data.split('\n');
+            lines.forEach(line => {
                 if (line.startsWith('ATOM') || line.startsWith('HETATM')) {
-                    chains.add(line.substring(21, 22));
-                    residues.add(line.substring(22, 26).trim());
-                }
-                // Extract sequence from SEQRES records
-                if (line.startsWith('SEQRES')) {
-                    const res = line.substring(19, 70).trim().split(' ');
-                    sequence += res.join('');
+                    const chainID = line.substring(21, 22).trim();
+                    const resi = line.substring(22, 27).trim(); // Residue identifier
+                    if (chainID) chains.add(chainID);
+                    if (resi) residues.add(`${chainID}-${resi}`);
                 }
             });
         }
@@ -218,25 +252,13 @@ class ProteinViewer {
         document.getElementById('structure-chains').textContent = `${chains.size} chains`;
         document.getElementById('structure-residues').textContent = `${residues.size} residues`;
         document.getElementById('structure-atoms').textContent = `${atoms} atoms`;
-        document.getElementById('structure-sequence').textContent = `${sequence.length} sequence length`;
 
-        // Hide placeholder
         document.querySelector('.viewer-placeholder').style.display = 'none';
-    }
-    
-    toggleHetero(show) {
-        this.viewer.setStyle({ hetatm: true }, { stick: { hidden: !show } });
-        this.viewer.render();
-    }
-
-    toggleBonds(show) {
-        this.viewer.setStyle({}, { line: { hidden: !show } });
-        this.viewer.render();
     }
 
     exportPDB() {
         if (!this.model) {
-            alert('No model loaded to export.');
+            this.showNotification('No model loaded to export.', 'warning');
             return;
         }
         const data = this.model.toPDB();
@@ -250,12 +272,15 @@ class ProteinViewer {
         this.measurementMode = mode;
         this.atom_clicks = [];
         this.click_count = 0;
-        alert(`Click on ${mode === 'distance' ? 2 : 3} atoms to measure the ${mode}.`);
+        this.showNotification(`Click on ${mode === 'distance' ? 2 : 3} atoms to measure the ${mode}.`, 'info');
     }
 
     handleAtomClick(atom) {
         if (this.measurementMode) {
+            // Clear any single-atom selection before starting measurement
+            this.clearSelection();
             this.atom_clicks.push(atom);
+            this.viewer.addStyle({ serial: atom.serial }, { sphere: { color: 'yellow', radius: 0.7 } });
             this.click_count++;
 
             if (this.measurementMode === 'distance' && this.click_count === 2) {
@@ -265,23 +290,15 @@ class ProteinViewer {
             }
         } else {
             // Regular selection
-            const selectionMode = document.getElementById('selection-mode').value;
-            let selection;
-            switch (selectionMode) {
-                case 'residue':
-                    selection = { resi: atom.resi, chain: atom.chain };
-                    break;
-                case 'chain':
-                    selection = { chain: atom.chain };
-                    break;
-                case 'atom':
-                default:
-                    selection = { serial: atom.serial };
-                    break;
-            }
-            this.viewer.setStyle(selection, { stick: { color: 'yellow' } });
+            // Clear previous selection before highlighting a new one
+            this.clearSelection();
+            // Add a highlight to the clicked atom without changing the main style
+            this.viewer.addStyle({ serial: atom.serial }, { sphere: { color: 'orange', radius: 0.7 } });
             this.viewer.render();
-            this.updateSelectionInfo(this.viewer.selectedAtoms(selection).length);
+            
+            // For now, we just log the atom info. A full selection system can be built on this.
+            console.log('Selected Atom:', atom);
+            this.updateSelectionInfo(1, atom);
         }
     }
 
@@ -295,6 +312,7 @@ class ProteinViewer {
             backgroundOpacity: 0.7
         });
         this.labels.push(label);
+        this.clearSelection(); // Clear measurement highlights
         this.viewer.render();
         this.resetMeasurement();
     }
@@ -316,6 +334,7 @@ class ProteinViewer {
             backgroundOpacity: 0.7
         });
         this.labels.push(label);
+        this.clearSelection(); // Clear measurement highlights
         this.viewer.render();
         this.resetMeasurement();
     }
@@ -326,23 +345,24 @@ class ProteinViewer {
         this.click_count = 0;
     }
 
-    selectAll() {
-        this.viewer.setStyle({}, { stick: { color: 'yellow' } });
-        this.viewer.render();
-        this.updateSelectionInfo(this.viewer.getModel().selectedAtoms({}).length);
-    }
-
     clearSelection() {
-        this.applyStyle(); // Re-apply the original style to clear selection highlight
+        this.viewer.removeStyle({}, {}); // This removes all added styles
+        this.applyStyle(); // Re-apply the main style to be safe
         this.viewer.removeAllLabels();
         this.labels = [];
-        this.updateSelectionInfo(0);
+        this.viewer.render();
+        this.updateSelectionInfo(0, null); // This will clear the panel
     }
 
-    updateSelectionInfo(count) {
+    updateSelectionInfo(count, atom) {
         const infoElement = document.getElementById('selection-info');
         if (count > 0) {
-            infoElement.innerHTML = `<p>${count} atoms selected.</p>`;
+            infoElement.innerHTML = `<p><b>Selected Atom:</b></p>
+                <ul>
+                    <li>Atom: ${atom.atom} (ID: ${atom.serial})</li>
+                    <li>Residue: ${atom.resn} ${atom.resi}</li>
+                    <li>Chain: ${atom.chain}</li>
+                </ul>`;
         } else {
             infoElement.innerHTML = `<p>No selection</p>`;
         }
@@ -350,7 +370,7 @@ class ProteinViewer {
 
     analyzeSurfaceArea() {
         if (!this.model) {
-            alert('Please load a structure first.');
+            this.showNotification('Please load a structure first.', 'warning');
             return;
         }
 
@@ -367,12 +387,12 @@ class ProteinViewer {
 
                 // The area is stored on the surface object after creation
                 const area = surface.area;
-                alert(`Solvent Accessible Surface Area (SASA): ${area.toFixed(2)} Å²`);
+                this.showNotification(`Solvent Accessible Surface Area (SASA): ${area.toFixed(2)} Å²`, 'success');
 
                 // Optional: remove the surface after showing the result
                 this.viewer.removeSurface(surface);
             } catch (error) {
-                alert('An error occurred during surface area calculation.');
+                this.showNotification('An error occurred during surface area calculation.', 'error');
                 console.error('Surface Area Error:', error);
             } finally {
                 this.showLoading(false);
@@ -382,12 +402,12 @@ class ProteinViewer {
 
     findCavities() {
         if (!this.model) {
-            alert('Please load a structure first.');
+            this.showNotification('Please load a structure first.', 'warning');
             return;
         }
 
         this.showLoading(true);
-        alert('Generating a molecular surface colored by hydrophobicity. Hydrophobic pockets (potential cavities) will appear reddish-brown.');
+        this.showNotification('Generating surface colored by hydrophobicity. Pockets will appear reddish-brown.', 'info', 5000);
 
         setTimeout(() => {
             try {
@@ -398,7 +418,7 @@ class ProteinViewer {
                 }, {});
                 this.viewer.render();
             } catch (error) {
-                alert('An error occurred while trying to find cavities.');
+                this.showNotification('An error occurred while trying to find cavities.', 'error');
                 console.error('Find Cavities Error:', error);
             } finally {
                 this.showLoading(false);
@@ -411,13 +431,13 @@ class ProteinViewer {
     // ==========================================
     analyzeSecondaryStructure() {
         if (!this.model) {
-            alert('Please load a structure first.');
+            this.showNotification('Please load a structure first.', 'warning');
             return;
         }
 
         const atoms = this.model.selectedAtoms({});
         if (atoms.length === 0) {
-            alert('No atoms found to analyze.');
+            this.showNotification('No atoms found to analyze.', 'warning');
             return;
         }
 
@@ -434,7 +454,7 @@ class ProteinViewer {
         });
 
         if (total_residues === 0) {
-            alert('Could not determine secondary structure. Ensure the PDB file contains SS information.');
+            this.showNotification('Could not determine secondary structure from this file.', 'warning');
             return;
         }
 
@@ -443,11 +463,8 @@ class ProteinViewer {
         const coil_percent = ((ss_counts['c'] / total_residues) * 100).toFixed(1);
 
         // For now, we'll show the results in an alert. This can be expanded to show in a panel.
-        const results = `Secondary Structure Analysis:
-        - Alpha Helices: ${helix_percent}% (${ss_counts['h']} residues)
-        - Beta Sheets: ${sheet_percent}% (${ss_counts['s']} residues)
-        - Coils/Turns: ${coil_percent}% (${ss_counts['c']} residues)`;
-        alert(results);
+        const results = `Structure: ${helix_percent}% α-helix, ${sheet_percent}% β-sheet, ${coil_percent}% coil.`;
+        this.showNotification(results, 'success', 6000);
     }
 
     // ==========================================
@@ -505,6 +522,32 @@ class ProteinViewer {
         if (overlay) {
             overlay.classList.toggle('hidden', !isLoading);
         }
+    }
+
+    showNotification(message, type = 'info', duration = 3000) {
+        const panel = document.getElementById('notification-panel');
+        const messageEl = document.getElementById('notification-message');
+        const iconEl = document.getElementById('notification-icon');
+
+        messageEl.textContent = message;
+
+        // Set icon based on type
+        const icons = {
+            info: 'fa-info-circle',
+            success: 'fa-check-circle',
+            warning: 'fa-exclamation-triangle',
+            error: 'fa-times-circle'
+        };
+        iconEl.className = `fas ${icons[type] || icons.info}`;
+        panel.className = `notification-panel ${type}`;
+
+        panel.classList.remove('hidden');
+
+        // Hide after duration
+        if (this.notificationTimeout) clearTimeout(this.notificationTimeout);
+        this.notificationTimeout = setTimeout(() => {
+            panel.classList.add('hidden');
+        }, duration);
     }
 
     animateElements() {
